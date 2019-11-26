@@ -1,9 +1,5 @@
-const mongoose = require('mongoose');
+const Sequelize=require('sequelize');
 
-const userSchema = mongoose.Schema({
-    username: { type: String, required: true },
-    password: { type: String, required: true }
-
-});
+const sequelize=new sequelize
 
 module.exports = mongoose.model('User', userSchema);

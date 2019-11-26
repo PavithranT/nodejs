@@ -8,7 +8,8 @@ const User = require('../model/user')
 
 router.post('/', (req, res) => {
     let login = req.body
-    let token = jwt.sign(login, config.tokenDetail.secretKey)
+    console.log(config.tokenDetail)
+    let token = jwt.sign(login, config.tokenDetail.secretKey, { expiresIn: config.tokenDetail.expiresIn })
     res
         .status(200)
         .json({
