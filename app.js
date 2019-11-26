@@ -1,9 +1,9 @@
 const express = require('express');
 const app = express();
 const morgan = require('morgan')
-const mongoose = require('mongoose')
+// const mongoose = require('mongoose')
 
-const auth = require('./api/auth').extractToken
+// const auth = require('./api/auth').extractToken
 
 app.use(morgan('dev'))
 
@@ -12,12 +12,12 @@ const loginRoutes = require('./api/routes/login')
 const bodyParser = require('body-parser');
 
 
-mongoose.connect(`mongodb+srv://pavithran96:${process.env.MONGO_ATLAS_PW}@node-restapi-wtldq.mongodb.net/test?retryWrites=true&w=majority`, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-    useFindAndModify: false
-})
+// mongoose.connect(`mongodb+srv://pavithran96:${process.env.MONGO_ATLAS_PW}@node-restapi-wtldq.mongodb.net/test?retryWrites=true&w=majority`, {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+//     useCreateIndex: true,
+//     useFindAndModify: false
+// })
 
 
 app.use(bodyParser.json());
@@ -35,11 +35,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 //Routes which handles requests
 app.use('/login', loginRoutes);
-app.use('/products', auth, productRoutes);
+app.use('/products', productRoutes);
 
-app.use((req, res) => {
+app.use((req, res, next) => {
     const error = new Error('Not found');
-    res.status(404).json({ message: "error msg" })
+    res.status(404).json({ message: "Invalid URL" })
     next(error)
 })
 

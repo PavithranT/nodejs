@@ -1,16 +1,19 @@
-const express = require('express')
+const express = require('express');
+const jwt = require('jsonwebtoken');
+
 const router = express.Router();
+const config = require('../../config')
 
 const User = require('../model/user')
 
 router.post('/', (req, res) => {
     let login = req.body
-    console.log(login)
-
+    let token = jwt.sign(login, config.tokenDetail.secretKey)
     res
         .status(200)
         .json({
-            message: "handling GET requests from /"
+            token: token,
+            message: "handling POST requests from /login"
         })
 
 })

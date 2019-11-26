@@ -1,45 +1,25 @@
 const express = require('express')
 const router = express.Router();
-const mongoose = require('mongoose')
+// const mongoose = require('mongoose')
 const jwt = require('jsonwebtoken');
 const Product = require('../model/product');
+const auth = require('../auth').extractToken
 
 const config = require('../../config')
 
-router.get('/', (req, res) => {
+router.get('/',auth, (req,  res) => {
 
-    // let data = { id: 1, password: 2 }
-    // let token = jwt.sign(data, config.tokenDetail.secretKey)
     try {
-        // let token = '23' //'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicGFzc3dvcmQiOjIsImlhdCI6MTU3NDYyMDQ0OH0.ZTlNFmFWl8Y3EwpihnaeWdb1Rc1fbCk4UZKjevJjf8c'
-        // jwt.verify(token, config.tokenDetail.secretKey);
-        Product.find()
-            .select('productId name price -_id')
-            .exec()
-            .then(record => {
-                const response = {
-                    token: token,
-                    count: record.length,
-                    products: record
-                }
-                res.status(200).json(response);
-            })
-            .catch(err => {
-                console.log(err);
-                res.status(500).json({
-                    error: err
-                });
-            });
-
-
+        res.status(200).json({
+            message: "Handling GET requests to /products",
+        });
     } catch (error) {
-        res.status(401).json({ message: "Unauthorized" })
+        console.log("error in GET product", error)
     }
-
 
 });
 
-router.post('/', (req, res) => {
+router.post('/',auth, (req, res) => {
     const product = new Product({
         name: req.body.name,
         price: req.body.price
