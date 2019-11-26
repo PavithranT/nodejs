@@ -39,7 +39,7 @@ app.use('/products', productRoutes);
 
 app.use((req, res, next) => {
     const error = new Error('Not found');
-    res.status(404).json({ message: "Invalid URL, Please check and retry..." })
+    res.status(404).json({ message: "Invalid URL, Please check and try again..." })
     next(error)
 })
 
