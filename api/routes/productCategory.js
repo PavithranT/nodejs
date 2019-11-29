@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ProductCategory = require('../../database/db').productCategory
+const Product = require('../../database/db').product
 const auth = require('../auth').extractToken
 const { check, validationResult } = require('express-validator');
 
@@ -40,7 +41,6 @@ router.get('/:pcId', auth, async (req, res) => {
 
 router.post('/', auth, async (req, res) => {
     let reqData = req.body
-    let createdData = null;
     let isNull;
 
 
@@ -51,15 +51,11 @@ router.post('/', auth, async (req, res) => {
             throw new BadRequestError(validationResult(req).errors);
 
         isNull = await ProductCategory.findOne(
-            {
-                attributes: ['name', 'productCategoryId'],
-                where: { name: reqData.name }
-            }
+            { where: { name: reqData.name } }
         )
-        if (isNull !== null) throw new ItemAlreadyExist('Product Category name already exits.');
+        if (isNull) { throw new ItemAlreadyExist("Product Category already exit...") }
+        await ProductCategory.create(reqData).then(obj => res.json(obj)).catch(err => { throw new DatabaseError() })
 
-        createdData = await ProductCategory.create(reqData)
-        res.json({ message: "Successfully Created..." })
     } catch (error) { res.status(error.status).json(error) }
 })
 
@@ -68,7 +64,7 @@ router.put('/:pcId', auth, async (req, res) => {
     let reqData = req.body
     const productCategoryId = req.params.pcId
     let isNull;
-    await check('name').isString().withMessage("Should be String").isLength({ min: 5 }).withMessage("Name should be min 5 letters..").run(req);
+    await check('name').isString().withMessage("Should be String").isLength({ min: 4 }).withMessage("Name should be min 5 letters..").run(req);
     try {
         if (!validationResult(req).isEmpty())
             throw new BadRequestError();

@@ -18,13 +18,14 @@ router.post('/', async (req, res) => {
         isNull = await User.findOne(
             { where: { username: reqData.username } }
         )
-        if (isNull !== null) throw new ItemAlreadyExist('User already exits.');
+        if (isNull !== null) throw new ItemAlreadyExist('username already exits.');
 
         await User.create(reqData)
             .then(obj => res.json({ message: "Sign up successfull", obj }))
             .catch(err => res.json(err))
 
     } catch (error) {
+        console.log(" sing up page error ", error)
         res.status(error.status).json({ errors: error.message })
     }
 

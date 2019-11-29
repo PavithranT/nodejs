@@ -28,6 +28,7 @@ app.use(function(req, res, next) {
 });
 
 //Database connection
+
 require('../database/db')
 
 

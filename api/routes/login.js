@@ -19,10 +19,9 @@ router.post('/', async (req, res, next) => {
     let token = null;
     try {
         if (!validationResult(req).isEmpty()) throw new BadRequestError(validationResult(req).errors);
-
         //get user's passcode
         const user = await Users.findOne({
-            where: { username: login.username },
+            where: { username: login.username, isDeleted: false },
             attributes: ['passcode'],
         })
 
@@ -46,6 +45,7 @@ router.post('/', async (req, res, next) => {
             }
             )
     } catch (err) {
+        console.log("login error ", err)
         res.status(err.status).json({ message: err.message })
         next(err);
     }

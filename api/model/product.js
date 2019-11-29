@@ -4,7 +4,7 @@ module.exports = (sequelize, Sequelize) => {
         productId: { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true },
         name: { type: Sequelize.STRING, allowNull: false },
         price: { type: Sequelize.INTEGER, allowNull: false },
-        type: { type: Sequelize.STRING, allowNull: false },
+      //  type: { type: Sequelize.STRING, allowNull: false },
         productCategoryId: { type: Sequelize.INTEGER, allowNull: false },
         isDeleted: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false }
     });
