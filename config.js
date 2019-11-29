@@ -1,7 +1,7 @@
 module.exports = {
     tokenDetail: {
         secretKey: 'worldisfullofdevelopers',
-        expiresIn: '2m'
+        expiresIn: '1h'
     }
 
 };

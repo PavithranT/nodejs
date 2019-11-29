@@ -1,120 +1,77 @@
 const express = require('express')
 const router = express.Router();
-// const mongoose = require('mongoose')
-const jwt = require('jsonwebtoken');
-const Product = require('../model/product');
+const Product = require('../../database/db').product;
 const auth = require('../auth').extractToken
+const { check, validationResult } = require('express-validator');
+const BadRequestError = require('../errors/BadRequestError')
+const ItemAlreadyExist = require('../errors/ItemAlreadyExist')
+const ProductCategory = require('../../database/db').productCategory
+const DatabaseError = require('../errors/DatabaseError')
 
-const config = require('../../config')
 
-router.get('/',auth, (req,  res) => {
 
+router.get('/', auth, async (req, res) => {
     try {
-        res.status(200).json({
-            message: "Handling GET requests to /products",
-        });
+        const productList = await Product.findAll({
+            attributes: ['productId', 'name', 'price', 'type', 'productCategoryId'], where: { isDeleted: false }
+        })
+        res.status(200).send(productList)
+
     } catch (error) {
-        console.log("error in GET product", error)
+        res.status(error.status).json({ error: error.message })
     }
 
 });
 
-router.post('/',auth, (req, res) => {
-    const product = new Product({
-        name: req.body.name,
-        price: req.body.price
-    });
-    product
-        .save()
-        .then(result => {
-            console.log(result);
-            res.status(201).json({
-                message: "Handling POST requests to /products",
-                createdProduct: result
-            });
+router.get('/:productId', auth, async (req, res) => {
+    const productId = req.params.productId
+    try {
+        const product = await Product.findOne({
+            attributes: ['name', 'price', 'type', 'productCategoryId'], where: { isDeleted: false, productId: productId }
         })
-        .catch(err => {
-            console.log(err);
-            res.status(500).json({
-                error: err
-            });
-        });
+
+        await res.status(200).send(product)
+
+    } catch (error) {
+        res.status(error.status).json({ error: error.message })
+    }
+
 });
 
-router.put('/product', (req, res) => {
-    // console.log(req.body)
-    // let productId = 54
-    let product = req.body
-    Product
-        .findOneAndUpdate({ productId: product.productId }, product)
-        // .update({ productId: productId }, { $set: product })
-        .then(result => {
-            console.log(result);
-            res.status(200).json({
-                message: "Update is done successfully",
-                // createdProduct: result
-            });
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(500).json({
-                error: err
-            });
-        });
 
-})
+router.post('/', auth, async (req, res, next) => {
+    await check('name').isString().withMessage("Should be String").isLength({ min: 5 }).withMessage("String with min 5 letters").run(req);
+    await check('price').isNumeric().withMessage("Should be numeric").run(req);
+    await check('type').isLength({ min: 5 }).run(req);
+    await check('productCategoryId').isNumeric().withMessage("Should be number").run(req);
 
-router.delete('/:productId', (req, res) => {
-    const productId = req.params.productId;
-    //Product.remove({ _id: id })
-    Product.deleteOne({ productId: productId })
-        .exec()
-        .then(result => {
-            res.status(200).json(result);
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(500).json({
-                error: err
-            });
-        });
-})
+    let isNull;
+    let reqData = req.body
+    try {
+        if (!validationResult(req).isEmpty()) throw new BadRequestError(validationResult(req).errors);
 
-router.get('/:productId', (req, res) => {
-    const productId = req.params.productId;
-    // const price = 33000
-    // const name = 'OnePlus7'
+        isNull = await Product.findOne(
+            { where: { name: reqData.name } }
+        )
+        // if (isNull !== null) throw new ItemAlreadyExist('Product already exits.');
+        // isNull = await ProductCategory.findOne(
+        //     { where: { name: reqData.name } }
+        // )
+        if (isNull !== null) throw new ItemAlreadyExist('Product already exits.');
 
-    Product.find().byProductId(productId) //find({ productId: productId })
-        .exec()
-        .then(record => {
-            //console.log("From database", record);
-            if (record) {
-                res.status(200).json(record);
-            } else {
-                res
-                    .status(404)
-                    .json({ message: "No valid entry found for provided ID" });
-            }
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(500).json({ error: err });
-        });
-})
-
-router.post('/product', (req, res) => {
-    let obj = req.body
-    console.log(Object.keys(obj))
+        let result
+        await Product.create(reqData).then(obj => result = obj).catch(err => { throw new DatabaseError() })
 
 
-    res
-        .status(200)
-        .json({
-            message: `handling POST  requests from /products/product`
-        })
+        res.json(result)
 
-})
+    } catch (error) {
+        res.status(error.status).json({ error: error.message });
+    }
+    console.log("came hereee")
 
 
-module.exports = router;
+});
+
+
+module.exports = router
